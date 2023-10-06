@@ -1,23 +1,30 @@
 ﻿using BepInEx;
-using PlayFab.ClientModels;
 using System;
-using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
-using Utilla;
 
 namespace GorillaUI
 {
-    [ModdedGamemode]
-    [BepInDependency("org.legoandmars.gorillatag.utilla", "1.5.0")]
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
         Color32 ColourCode;
-        GameObject Name;
         GameObject obj;
-        GameObject Colour;
+        GameObject CanvasHolder;
         void Start() { Utilla.Events.GameInitialized += OnGameInitialized; }
+
+        void OnEnable()
+        {
+            CanvasHolder.SetActive(true);
+            HarmonyPatches.ApplyHarmonyPatches();
+        }
+
+        void OnDisable()
+        {
+            CanvasHolder.SetActive(false);
+            HarmonyPatches.RemoveHarmonyPatches();
+        }
+
         void OnGameInitialized(object sender, EventArgs e)
         {
             //grabs name
@@ -25,9 +32,8 @@ namespace GorillaUI
             var Name = GameObject.Find("Player Objects/Local VRRig/Local Gorilla Player/rig/NameTagAnchor/NameTagCanvas/Text").GetComponent<Text>().text;
 
             //spawns canvas
-
             Text text;
-            GameObject CanvasHolder = new GameObject("CanvasHolder");
+            CanvasHolder = new GameObject("CanvasHolder");
 
             // changed thingys
             CanvasHolder.transform.SetParent(GorillaLocomotion.Player.Instance.rightControllerTransform);
@@ -40,7 +46,7 @@ namespace GorillaUI
 
             //change name of canvas
             CanvasHolder.GetComponent<Canvas>().name = "GorillaUI";
-            
+
             // load text
             GameObject TextObject = new GameObject("Text");
             TextObject.transform.SetParent(CanvasHolder.transform, false);
@@ -52,8 +58,8 @@ namespace GorillaUI
             //changed text and font
             text = TextObject.AddComponent<Text>();
             text.font = GorillaTagger.Instance.offlineVRRig.playerText.font;
-            text.text = "CURRENT NAME:\n" + Name + "\nCURRENT COLOUR CODE:\n" + ColourCode.r + ", " + ColourCode.g + ", " + ColourCode.b;
-            
+            text.text = "NAME: " + Name + "\nCOLOUR: " + ColourCode.r + ", " + ColourCode.g + ", " + ColourCode.b;
+
 
             obj = GameObject.Find("GorillaUI/Text");
 
@@ -64,19 +70,6 @@ namespace GorillaUI
             //Changes colour
 
             obj.GetComponent<Text>().color = Color.white;
-
-            void OnEnable()
-            {
-                CanvasHolder.SetActive(true);
-                HarmonyPatches.ApplyHarmonyPatches();
-            }
-
-            void OnDisable()
-            {
-                CanvasHolder.SetActive(false);
-                HarmonyPatches.RemoveHarmonyPatches();
-            }
-
         }
     }
 }
