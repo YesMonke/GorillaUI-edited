@@ -8,9 +8,14 @@ namespace GorillaUI
     [BepInPlugin(PluginInfo.GUID, PluginInfo.Name, PluginInfo.Version)]
     public class Plugin : BaseUnityPlugin
     {
+        var GameTags = 0;
+        var LobbyTags = 0;
+        var SessionTags = 0;
+        
         Color32 ColourCode;
         GameObject obj;
         GameObject CanvasHolder;
+        
         void Start() { Utilla.Events.GameInitialized += OnGameInitialized; }
 
         void OnEnable()
@@ -70,6 +75,29 @@ namespace GorillaUI
             //Changes colour
 
             obj.GetComponent<Text>().color = Color.white;
+        }
+        void OnTagPlayer()
+        {
+            LobbyTags++;
+            SessionTags++;
+        }
+        public void OnLeave(string gamemode)
+        {
+            LobbyTags = 0;
+        }
+    }
+    public class OnTagEvent : MonoBehaviourPunCallbacks, IOnEventCallback
+    {
+        public void OnEvent(EventData photonEvent)
+        {
+            if(photonEvent.Code == GorillaTagManager.ReportTagEvent || photonEvent.Code == GorillaTagManager.ReportInfectionTagEvent)
+            {
+                object[] data = photonEvent.CustomData as object[];
+                if(data[0].ToString() == PhotonNetwork.LocalPlayer.UserId)
+                {
+                    Plugin.OnTagPlayer();
+                }
+            }
         }
     }
 }
